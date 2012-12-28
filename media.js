@@ -4,9 +4,13 @@
 (function(win) {
     'use strict';
 
+    // Internal globals
     var _doc            = win.document,
         _mediaInfo      = _doc.getElementsByTagName('head')[0],
         _mediaInfoStyle = (win.getComputedStyle && win.getComputedStyle(_mediaInfo, null)) || _mediaInfo.currentStyle,
+        _deviceWidth    = screen.width,
+        _deviceHeight   = screen.height,
+        _color          = screen.colorDepth,
         _viewport       = _doc.documentElement,
         _typeList       = 'screen, print, speech, projection, handheld, tv, braille, embossed, tty',
         _mediaExpr      = /\(\s*(not)?\s*(min|max)?-?([^:\s]+)\s*:\s*([^\s]+)\s*\)/,
@@ -63,12 +67,11 @@
             "width"                 : 0, // Update on resize
             "height"                : 0, // Update on resize
             "aspect-ratio"          : 0, // Update on resize
-            "color"                 : screen.colorDepth,
-            "color-index"           : Math.pow(2, screen.colorDepth),
-            "device-aspect-ratio"   : (screen.width / screen.height).toFixed(2),
-            "device-width"          : screen.width,
-            "device-height"         : screen.height,
-            "monochrome"            : Number(screen.colorDepth == 2),
+            "color"                 : _color,
+            "color-index"           : Math.pow(2, _color),
+            "device-aspect-ratio"   : (_deviceWidth / _deviceHeight).toFixed(2),
+            "device-width"          : _deviceWidth,
+            "device-height"         : _deviceHeight,
             "orientation"           : "landscape", // Update on resize/orientation change
             "resolution"            : 96
         },
@@ -92,7 +95,7 @@
                     return (this.features.resolution / 72) * match[1];
                 }
 
-                return match[1];
+                return match[1] * 1;
             }
 
             // Convert aspect ratio to decimals
@@ -110,7 +113,7 @@
                     return match[1] * 96;
                 }
 
-                return match[1];
+                return match[1] * 1;
             }
 
             return data;
@@ -122,17 +125,17 @@
         parseMatch: function(media, matched) {
             var mql         = typeof media === 'string' ? media.split(', ') : media,
                 mq          = mql.pop(),
+                negate      = mq.indexOf('not ') !== -1,
                 mt          = 'all',
                 exprList    = mq.split(' and '),
                 exprl       = exprList.length - 1,
-                match       = true;
+                match       = !negate;
 
             do {
                 var expr        = null,
                     exprMatch   = true,
                     type        = null,
-                    typeMatch   = true,
-                    negate      = false;
+                    typeMatch   = true;
 
                 // Test for 'not screen' and (max-width: 400px).
                 // Evaluate each expr, then call parseMatch() if there are more media queries or return value of negate.
@@ -141,8 +144,6 @@
                     if (expr) {
                         var feature     = this.features[expr[3]],
                             absValue    = this.getAbsValue(expr[4]);
-
-                        negate = expr[1] === 'not';
 
                         if (expr[2] === 'min') {
                             exprMatch = feature >= absValue;
@@ -154,19 +155,19 @@
                             exprMatch = feature;
                         }
                     } else {
-                        type        = exprList[exprl].match(_typeExpr) || ['', ''];
-                        negate      = type[1] === 'not';
-                        mt          = type[2] || mt;
+                        type        = exprList[exprl].match(_typeExpr) || ['', 'all'];
+                        mt          = type[2];
                         typeMatch   = mt === this.type || mt === 'all';
 
-                        matched && negate && (mt = _typeList.split(mt).join(', ').replace(/(,\s){2}/, ''));
+                        matched && negate && mt !== 'all' && (mt = _typeList.split(mt).join(', ').replace(/(,\s){2}/, ''));
                     }
 
                     if (
-                        (expr && ((negate && exprMatch) || (!negate && !exprMatch))) || 
-                        (!expr && ((negate && typeMatch) || (!negate && !typeMatch)))
+                        //(expr && ((negate && exprMatch) || (!negate && !exprMatch))) || 
+                        //(!expr && ((negate && typeMatch) || (!negate && !typeMatch)))
+                        ((expr && !exprMatch) || (!expr && !typeMatch))
                     ) {
-                        return (mql.length ? this.parseMatch(mql, matched) : false);
+                        return (mql.length ? this.parseMatch(mql, matched) : negate);
                     }
                 }
             } while(exprl--);
@@ -217,10 +218,13 @@
             Sets properties of Media that change on resize and/or orientation.
         */
         setMutableFeatures: function() {
-            this.features.width            = win.innerWidth || _viewport.clientWidth;
-            this.features.height           = win.innerHeight || _viewport.clientHeight;
-            this.features['aspect-ratio']  = (this.features.width / this.features.height).toFixed(2);
-            this.features.orientation      = this.features.height >= this.features.width ? 'portrait' : 'landscape';
+            var w = win.innerWidth || _viewport.clientWidth,
+                h = win.innerHeight || _viewport.clientHeight;
+
+            this.features.width            = w;
+            this.features.height           = h;
+            this.features['aspect-ratio']  = (w / h).toFixed(2);
+            this.features.orientation      = (h >= w ? 'portrait' : 'landscape');
         },
 
         listen: function(listener) {
@@ -234,10 +238,12 @@
         },
 
         init: function() {
-            this.supported = parseFloat(_mediaInfoStyle.height) === 1;
-            this.type      = _typeList.split(', ')[parseFloat(_mediaInfoStyle.zIndex) - 1] || 'all'; 
+            var x           = win.devicePixelRatio;
 
-            this.features.resolution = screen.deviceXDPI || parseFloat(_mediaInfoStyle.width);
+            this.supported  = parseFloat(_mediaInfoStyle.height) === 1;
+            this.type       = _typeList.split(', ')[parseFloat(_mediaInfoStyle.zIndex) - 1] || 'all'; 
+
+            this.features.resolution = (x && x * 96) || screen.deviceXDPI || parseFloat(_mediaInfoStyle.width);
 
             this.setMutableFeatures();
             this.listen(this.watch);
