@@ -1,7 +1,7 @@
 Media.match
 ===========
 
-Testing css media queries in javascript faster than native window.matchMedia, perhaps.
+Testing css media queries in javascript faster than native window.matchMedia, perhaps. [@mediamatchjs](https://twitter.com/mediamatchjs)
 
 Why?
 ---
@@ -54,3 +54,7 @@ Example
         });
 </script>
 ```
+##Related projects
+* [Nonresponsive](https://github.com/weblinc/nonresponsive)
+* [Picture](https://github.com/weblinc/picture)
+* [Img-srcset](https://github.com/weblinc/img-srcset)
