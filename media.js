@@ -250,5 +250,7 @@
         }
     };
 
-    Media.init();
+    win.Media.init();
+
+    window.matchMedia || (window.matchMedia = Media.match);
 })(window);
