@@ -5,7 +5,7 @@ Test css media queries in javascript. A faster polyfill for matchMedia support. 
 
 Why?
 ---
-* **Browser support**: Tested in IE 6-9, Chrome, Firefox, Opera and Safari
+* **Browser support**: Tested in IE 6-9, Chrome, Firefox, Opera, Safari, iOS and Android
 * **Feature support**: Has all the basics + most of the spec http://www.w3.org/TR/css3-mediaqueries/
 * **Speed**: In many browsers, ops/sec rival or exceed native matchMedia. See 'test' to run your own speed tests using JSLitmus or check out http://jsperf.com/matchmedia/11 and http://jsfiddle.net/wV9HZ/2/
 * **Size**: 3kb minified
@@ -70,6 +70,6 @@ Example
 </script>
 ```
 ##Related projects
-* [Nonresponsive](https://github.com/weblinc/nonresponsive)
-* [Picture](https://github.com/weblinc/picture)
-* [Img-srcset](https://github.com/weblinc/img-srcset)
+* [Nonresponsive](https://github.com/weblinc/nonresponsive): Media queries for the unsupportive IE6-8.
+* [Picture](https://github.com/weblinc/picture): Responsive images based on the 'picture' element proposal.
+* [Img-srcset](https://github.com/weblinc/img-srcset): Responsive images based on the 'srcset' attribute proposal.
