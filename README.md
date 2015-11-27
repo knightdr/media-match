@@ -42,7 +42,7 @@ Example
 Both code blocks are valid uses of ```matchMedia()```. The first example shows the caching of a ```MediaQueryList``` object and the second shows an alternative usage as well as ```addListener``` support.
 The ```addListener``` method is part of the ```MediaQueryList``` object, therefore it can be added on the cached version or immediately after ```matchMedia()```.
 
-```
+```html
 <script type="text/javascript">
     var mql = window.matchMedia('screen and (color) and (orientation: landscape) and (min-width: 600px) and (min-height: 400px)');
     //console.log(mql);
@@ -55,7 +55,7 @@ The ```addListener``` method is part of the ```MediaQueryList``` object, therefo
     */
 </script>
 ```
-```
+```html
 <script type="text/javascript">
     window.matchMedia('screen and (min-width: 600px) and (min-height: 400px), screen and (min-height: 400px)')
         .addListener(function(mql) {
